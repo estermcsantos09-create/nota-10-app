@@ -1,0 +1,635 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFCF3">
+<meta name="description" content="Nota 10: planner de estudos com estrelas e prêmios aprovados pelos pais.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Nota 10">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Nota 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800;900&family=Patrick+Hand&display=swap">
+<style>
+/* Layout: app de celular (até 480px) em folha de caderno pautado; cartões como post-its e fichas; abas na base; área dos pais em folha sobreposta com PIN */
+:root{
+  --paper:#FFFCF3; --card:#FFFFFF; --line:#DCE6F5; --margin:#F2A0A0;
+  --ink:#1E2B4F; --soft:#56628A; --blue:#3D7BE0; --blue-soft:#E4EEFD;
+  --yellow:#FFC83D; --yellow-deep:#C98A00; --yellow-soft:#FFF3CC;
+  --green:#22895B; --green-soft:#DDF3E8; --red:#D93F45; --red-soft:#FDE3E3;
+  --purple:#7A5AE0; --purple-soft:#ECE6FD; --chalk:#2F5D50;
+  --shadow:0 2px 0 rgba(30,43,79,.06),0 8px 20px rgba(30,43,79,.08);
+  --f-disp:"Baloo 2","Nunito",system-ui,sans-serif;
+  --f-body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-hand:"Patrick Hand","Segoe Print","Comic Sans MS",cursive;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
+  background-image:linear-gradient(90deg,transparent 22px,var(--margin) 22px 24px,transparent 24px),repeating-linear-gradient(transparent 0 31px,var(--line) 31px 32px)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px;border-radius:10px}
+.num{font-variant-numeric:tabular-nums}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.star{width:20px;height:20px;flex:none}
+
+.app{max-width:480px;margin:0 auto;min-height:100%;padding:16px 16px 112px 34px;display:flex;flex-direction:column;gap:16px}
+.top{display:flex;align-items:center;gap:10px}
+.top>svg{width:48px;height:48px;flex:none}
+.brand{font-family:var(--f-disp);font-weight:800;font-size:28px;line-height:1;color:var(--ink)}
+.brand b{color:var(--blue)}
+.hello{font-family:var(--f-hand);font-size:19px;color:var(--soft);line-height:1.1;margin-top:2px}
+.lock-btn{margin-left:auto;display:flex;align-items:center;gap:6px;border:2px solid var(--line);background:var(--card);border-radius:999px;padding:7px 12px;font-weight:800;font-size:13px;color:var(--soft)}
+.lock-btn .ic{width:16px;height:16px}
+
+.card{background:var(--card);border-radius:18px;padding:16px;box-shadow:var(--shadow);border:2px solid var(--line)}
+.card h2{font-family:var(--f-disp);font-weight:700;font-size:19px;margin:0 0 10px;display:flex;align-items:center;gap:8px;line-height:1.2}
+.card h2 small{margin-left:auto;font-family:var(--f-body);font-size:12px;font-weight:800;color:var(--soft)}
+.card h2 .ic{color:var(--blue)}
+.postit{background:var(--yellow-soft);border:0;border-radius:4px 4px 18px 4px;transform:rotate(-.8deg);box-shadow:0 6px 14px rgba(150,110,0,.15)}
+.tape{position:relative}
+.tape::before{content:"";position:absolute;top:-10px;left:50%;width:84px;height:20px;margin-left:-42px;background:rgba(61,123,224,.25);transform:rotate(-3deg)}
+
+/* placar de estrelas */
+.score{background:var(--ink);color:#fff;border:0;position:relative;overflow:hidden}
+.score::after{content:"";position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;background:rgba(255,200,61,.14)}
+.score-top{display:flex;align-items:center;gap:14px;position:relative}
+.score .big{font-family:var(--f-disp);font-weight:800;font-size:44px;line-height:1;display:flex;align-items:center;gap:8px}
+.score .big .star{width:38px;height:38px}
+.score .lbl{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#C9D4F2}
+.level{margin-left:auto;text-align:right}
+.level b{display:block;font-family:var(--f-disp);font-size:18px;color:var(--yellow)}
+.level span{font-size:12px;color:#C9D4F2;font-weight:700}
+.xp{height:10px;border-radius:5px;background:rgba(255,255,255,.15);margin-top:14px;overflow:hidden;position:relative}
+.xp i{display:block;height:100%;background:var(--yellow);border-radius:0 5px 5px 0}
+.score-row{display:flex;gap:10px;margin-top:12px;position:relative;flex-wrap:wrap}
+.pill-d{background:rgba(255,255,255,.1);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px}
+.pill-d .star{width:15px;height:15px}
+
+/* listas */
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--paper);border:2px solid var(--line)}
+.item{flex-wrap:wrap;row-gap:8px;justify-content:flex-end}
+.item .mid{flex:1 1 105px;min-width:0}
+.item .mid+*{margin-left:auto}
+.item .mid b{display:block;font-weight:800;overflow-wrap:anywhere;line-height:1.3}
+.item .mid span{font-size:12px;color:var(--soft);font-weight:700}
+.item.done{background:var(--green-soft);border-color:#BFE6D2}
+.item.done .mid b{text-decoration:line-through;color:var(--soft)}
+.chk{width:30px;height:30px;border-radius:9px;border:2.5px solid var(--blue);background:#fff;flex:none;display:grid;place-items:center;padding:0;color:#fff}
+.chk .ic{width:18px;height:18px;opacity:0;stroke-width:3}
+.done .chk{background:var(--green);border-color:var(--green)}.done .chk .ic{opacity:1}
+.sdot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+.reward-tag{font-size:12px;font-weight:900;color:var(--yellow-deep);display:flex;align-items:center;gap:3px;white-space:nowrap}
+.reward-tag .star{width:14px;height:14px}
+.x{border:0;background:none;color:var(--soft);font-size:20px;line-height:1;padding:4px 6px;border-radius:8px;opacity:.6}
+.x:hover{color:var(--red);opacity:1}
+.empty{color:var(--soft);font-size:14px;text-align:center;padding:10px 0;margin:0}
+.time{font-family:var(--f-disp);font-weight:700;font-variant-numeric:tabular-nums;color:var(--blue);min-width:46px}
+
+.pill{font-size:11px;font-weight:900;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill.hot{background:var(--red);color:#fff}
+.pill.soon{background:var(--yellow-soft);color:#8A5D00}
+.pill.later{background:var(--blue-soft);color:var(--blue)}
+.pill.ok{background:var(--green-soft);color:var(--green)}
+.pill.wait{background:var(--purple-soft);color:var(--purple)}
+.pill.no{background:var(--red-soft);color:var(--red)}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800}
+.chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+
+.add{display:flex;flex-direction:column;gap:8px;margin-top:12px;padding-top:12px;border-top:2px dashed var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.inp{flex:1;min-width:0;border:2px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;font-weight:600}
+.inp:focus{border-color:var(--blue);outline:none}
+.inp.w{flex:0 1 100px}
+select.inp{flex:1 1 130px}
+.btn{border:0;background:var(--blue);color:#fff;font-weight:900;border-radius:12px;padding:10px 16px;box-shadow:0 3px 0 #2A5CB0;font-family:var(--f-body)}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.btn.yellow{background:var(--yellow);color:var(--ink);box-shadow:0 3px 0 var(--yellow-deep)}
+.btn.green{background:var(--green);box-shadow:0 3px 0 #17643F}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.btn.red{background:#fff;color:var(--red);border:2px solid var(--red-soft);box-shadow:none}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.lbl-s{font-size:12px;font-weight:800;color:var(--soft)}
+.tip{font-family:var(--f-hand);font-size:21px;line-height:1.3;color:var(--ink);margin:0}
+.tip-who{font-size:12px;font-weight:800;color:#8A5D00;margin-top:8px;display:flex;justify-content:space-between;align-items:center}
+.linkbtn{border:0;background:none;padding:0;color:var(--blue);font-weight:900;font-size:13px;text-decoration:underline}
+
+/* matérias */
+.subs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sub{border-radius:16px;padding:14px;color:#fff;position:relative;min-height:104px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden}
+.sub::before{content:"";position:absolute;left:0;top:0;bottom:0;width:10px;background:rgba(0,0,0,.12)}
+.sub b{font-family:var(--f-disp);font-size:16.5px;line-height:1.1;padding:12px 0 0 6px;overflow-wrap:break-word}
+.sub span{font-size:12px;font-weight:800;opacity:.9;padding-left:6px}
+.sub .x{position:absolute;right:4px;top:4px;color:#fff;opacity:.75}
+.colors{display:flex;gap:8px;flex-wrap:wrap}
+.colors button{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px var(--line)}
+.colors button[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+
+/* calendário */
+.cal-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cal-h b{font-family:var(--f-disp);font-size:18px;text-transform:capitalize}
+.cal-h button{border:2px solid var(--line);background:#fff;border-radius:10px;width:36px;height:36px;font-weight:900}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal .wd{font-size:11px;font-weight:900;color:var(--soft)}
+.cd{border:0;background:none;border-radius:10px;padding:5px 0 3px;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:800;font-variant-numeric:tabular-nums;min-height:42px}
+.cd.out{opacity:.3}
+.cd.today{background:var(--yellow-soft)}
+.cd[aria-pressed="true"]{background:var(--blue);color:#fff}
+.cd .dots{display:flex;gap:2px;height:6px}
+.cd .dots i{width:6px;height:6px;border-radius:50%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;font-weight:800;color:var(--soft);margin-top:8px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+
+/* foco */
+.timer{display:flex;flex-direction:column;align-items:center;gap:12px}
+.ring{position:relative;width:220px;height:220px}
+.ring svg{width:220px;height:220px;transform:rotate(-90deg)}
+.clock{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.clock b{font-family:var(--f-disp);font-size:52px;line-height:1;font-variant-numeric:tabular-nums}
+.clock span{font-family:var(--f-hand);font-size:20px;color:var(--soft)}
+.hbars{display:flex;flex-direction:column;gap:10px}
+.hbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;align-items:center;font-size:14px}
+.hbar .nm{font-weight:800;display:flex;align-items:center;gap:8px;min-width:0}
+.hbar .nm span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar .v{font-weight:900;font-variant-numeric:tabular-nums}
+.hbar .tr{grid-column:1/-1;height:10px;background:var(--blue-soft);border-radius:5px;overflow:hidden}
+.hbar .tr i{display:block;height:100%;border-radius:0 5px 5px 0;min-width:4px}
+
+/* prêmios */
+.rewards{display:flex;flex-direction:column;gap:10px}
+.rw{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px;border-radius:16px;border:2px solid var(--line);background:#fff}
+.rw .emo{grid-row:1/3;width:52px;height:52px;border-radius:14px;background:var(--yellow-soft);display:grid;place-items:center;font-size:28px}
+.rw b{font-weight:900;overflow-wrap:anywhere}
+.rw .cost{display:flex;align-items:center;gap:4px;font-weight:900;color:var(--yellow-deep);font-size:13px}
+.rw .cost .star{width:15px;height:15px}
+.rw .prog{grid-column:2/4;height:8px;background:var(--yellow-soft);border-radius:4px;overflow:hidden}
+.rw .prog i{display:block;height:100%;background:var(--yellow);border-radius:0 4px 4px 0}
+.rw .btn{grid-row:1;grid-column:3;padding:8px 12px;font-size:13px}
+
+/* abas */
+.tabs{position:fixed;left:0;right:0;bottom:0;padding:8px 12px calc(10px + env(safe-area-inset-bottom,0px));display:flex;justify-content:center;pointer-events:none;z-index:5}
+.tabs nav{pointer-events:auto;display:flex;gap:2px;background:#fff;border:2px solid var(--line);border-radius:22px;padding:6px;box-shadow:var(--shadow);max-width:456px;width:100%}
+.tab{flex:1;border:0;background:none;border-radius:16px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:900;color:var(--soft)}
+.tab .ic{width:22px;height:22px}
+.tab[aria-selected="true"]{background:var(--blue-soft);color:var(--blue)}
+
+/* folhas sobrepostas */
+[hidden]{display:none!important}
+.sheet-bg{position:fixed;inset:0;background:rgba(20,28,55,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:10px}
+.sheet{background:var(--paper);border-radius:24px;max-width:470px;width:100%;max-height:94%;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:14px;border:2px solid var(--line);margin-bottom:env(safe-area-inset-bottom,0px)}
+.sheet h3{font-family:var(--f-disp);font-size:24px;margin:0;display:flex;align-items:center;gap:8px}
+.sheet h3 .x{margin-left:auto;opacity:1}
+.pin-dots{display:flex;gap:14px;justify-content:center;margin:6px 0}
+.pin-dots i{width:18px;height:18px;border-radius:50%;border:3px solid var(--ink)}
+.pin-dots i.on{background:var(--ink)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:300px;margin:0 auto;width:100%}
+.pad button{height:60px;border-radius:16px;border:2px solid var(--line);background:#fff;font-family:var(--f-disp);font-size:26px;font-weight:700}
+.ptabs{display:flex;gap:6px;flex-wrap:wrap}
+.err{color:var(--red);font-weight:800;font-size:13px;margin:0;text-align:center}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#fff;border:2px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.stat b{display:block;font-family:var(--f-disp);font-size:24px;line-height:1.1}
+.stat span{font-size:11px;font-weight:800;color:var(--soft)}
+.rule{display:grid;grid-template-columns:minmax(0,1fr) 84px;gap:8px;align-items:center;font-weight:700}
+.switch{display:flex;align-items:center;gap:10px;font-weight:800}
+.switch input{width:22px;height:22px;accent-color:var(--blue)}
+
+.sample{font-size:12px;color:var(--soft);text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;background:#fff;border:2px dashed var(--line);border-radius:12px;padding:8px}
+.sample button{border:0;background:none;color:var(--blue);font-weight:900;text-decoration:underline;padding:0}
+.toast{position:fixed;left:50%;bottom:104px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-weight:800;font-size:14px;z-index:30;white-space:nowrap;display:flex;gap:6px;align-items:center;max-width:92vw}
+.toast .star{width:16px;height:16px}
+.burst{position:fixed;pointer-events:none;z-index:31;width:22px;height:22px;animation:fly .9s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(200deg) scale(.4);opacity:0}}
+@media (prefers-reduced-motion:reduce){.burst{display:none}*{transition:none!important;animation:none!important}}
+
+.install-btn{margin-left:auto;display:flex;align-items:center;gap:6px;border:0;background:var(--blue);color:#fff;border-radius:999px;padding:8px 13px;font-weight:800;font-size:13px;box-shadow:0 3px 0 #2A5CB0}
+.install-btn svg{width:16px;height:16px}
+.install-btn:not([hidden])+.lock-btn{margin-left:8px}
+.ios-bg{position:fixed;inset:0;background:rgba(20,28,55,.5);display:flex;align-items:flex-end;justify-content:center;z-index:30;padding:12px}
+.ios-bg .ios{background:var(--card);border-radius:22px;padding:20px;max-width:456px;width:100%;border:2px solid var(--line);display:flex;flex-direction:column;gap:12px;margin-bottom:env(safe-area-inset-bottom,0px)}
+.ios h3{margin:0;font-size:20px}.ios ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.ios img{width:56px;height:56px;border-radius:14px}
+</style>
+
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="logo" viewBox="0 0 48 48">
+      <rect x="6" y="34" width="36" height="8" rx="2" fill="#3D7BE0"/><rect x="6" y="34" width="5" height="8" fill="#2A5CB0"/><rect x="11" y="36.5" width="28" height="1.6" rx=".8" fill="#fff" opacity=".6"/>
+      <rect x="9" y="26" width="31" height="8" rx="2" fill="#D93F45"/><rect x="34" y="26" width="6" height="8" fill="#B02E33"/><rect x="12" y="28.5" width="20" height="1.6" rx=".8" fill="#fff" opacity=".6"/>
+      <rect x="7" y="18" width="33" height="8" rx="2" fill="#22895B" transform="rotate(-4 23 22)"/><rect x="10" y="20.5" width="24" height="1.6" rx=".8" fill="#fff" opacity=".6" transform="rotate(-4 23 22)"/>
+      <path d="M24 2.5l3.1 6.3 6.9 1-5 4.9 1.2 6.9-6.2-3.3-6.2 3.3 1.2-6.9-5-4.9 6.9-1z" fill="#FFC83D" stroke="#C98A00" stroke-width="1.2" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="st" viewBox="0 0 24 24"><path d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.3l-5.8 3.1 1.1-6.5L2.6 9.3l6.5-.9z" fill="#FFC83D" stroke="#C98A00" stroke-width="1.3" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/></symbol>
+    <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 2M9.5 3h5"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M3 9h18M12 9v11M12 9C10 5 6 5 7 8c.5 1 5 1 5 1zM12 9c2-4 6-4 5-1-.5 1-5 1-5 1z"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.8.8 1 1.5 1 2.5h6c0-1 .2-1.7 1-2.5A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-fire" viewBox="0 0 24 24"><path d="M12 21c-4 0-6.5-2.6-6.5-6 0-3.5 3-5.5 3.5-9 2 1.5 3 3.5 3 5 1-1 1.5-2 1.5-3.5 2.5 2 4 4.5 4 7.5 0 3.4-2.5 6-5.5 6z"/></symbol>
+  </defs>
+</svg>
+
+<div class="app">
+  <header class="top">
+    <svg aria-hidden="true"><use href="#logo"/></svg>
+    <div><div class="brand">Nota <b>10</b></div><div class="hello" id="hello"></div></div>
+    <button class="install-btn" id="installBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Instalar</button>
+    <button class="lock-btn" id="parentBtn" aria-label="Área dos pais"><svg class="ic"><use href="#i-lock"/></svg>Pais</button>
+  </header>
+  <main id="main"></main>
+</div>
+
+<div class="tabs">
+  <nav role="tablist" aria-label="Seções">
+    <button class="tab" role="tab" data-tab="hoje"><svg class="ic"><use href="#i-sun"/></svg>Hoje</button>
+    <button class="tab" role="tab" data-tab="materias"><svg class="ic"><use href="#i-book"/></svg>Matérias</button>
+    <button class="tab" role="tab" data-tab="agenda"><svg class="ic"><use href="#i-cal"/></svg>Agenda</button>
+    <button class="tab" role="tab" data-tab="foco"><svg class="ic"><use href="#i-timer"/></svg>Foco</button>
+    <button class="tab" role="tab" data-tab="premios"><svg class="ic"><use href="#i-gift"/></svg>Prêmios</button>
+  </nav>
+</div>
+
+<div class="sheet-bg" id="pSheet" hidden><div class="sheet" id="pBody" role="dialog" aria-label="Área dos pais"></div></div>
+
+<script>
+(function(){
+const KEY='nota10-v1';
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const today=()=>iso(new Date());
+const diffDays=s=>Math.round((parse(s)-parse(today()))/864e5);
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const DOW=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const DOW3=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const COLORS=['#3D7BE0','#D93F45','#22895B','#E08A1E','#7A5AE0','#D6488F','#1E9AA8','#6B7A2A'];
+const TYPES={prova:['Prova','#D93F45'],trabalho:['Trabalho','#7A5AE0'],tarefa:['Tarefa de casa','#3D7BE0']};
+const EMOS=['🎮','📱','🍕','🍦','🎬','🛝','📚','🎁','⚽','🎨','🧁','🛍️'];
+const LEVELS=[[0,'Iniciante'],[100,'Aprendiz'],[300,'Explorador(a)'],[600,'Craque'],[1000,'Mestre dos Estudos'],[1600,'Lenda Nota 10']];
+const TIPS=[
+ 'Estude um pouquinho todo dia. 20 minutos diários valem mais que 3 horas na véspera da prova.',
+ 'Depois de ler um texto, feche o caderno e tente explicar com suas palavras. Se travar, é ali que precisa revisar.',
+ 'Faça resumos com cores: uma cor para conceitos, outra para exemplos.',
+ 'Celular longe durante o foco! Deixe em outro cômodo ou no modo não perturbe.',
+ 'Antes da prova, refaça os exercícios que você errou. Eles mostram o que ainda falta aprender.',
+ 'Ensine a matéria para alguém da família. Quem ensina aprende duas vezes.',
+ 'Use mapas mentais: escreva o tema no meio e ligue as ideias com setas.',
+ 'Beba água e faça pausas curtas. O cérebro também precisa respirar.',
+ 'Comece pela matéria mais difícil, quando você ainda está com energia.',
+ 'Organize a mochila na noite anterior. Manhã tranquila, dia melhor.',
+ 'Revise a matéria no mesmo dia da aula. Fica muito mais fácil lembrar depois.',
+ 'Crie perguntas sobre o conteúdo e tente responder sem olhar.',
+ 'Dormir bem ajuda a guardar o que você estudou. Nada de virar a noite!',
+ 'Divida um trabalho grande em pedacinhos e faça um por dia.',
+ 'Leia o enunciado inteiro antes de responder. Muitas respostas estão escondidas nele.',
+ 'Errou? Tudo bem! Errar faz parte de aprender. Veja o porquê e tente de novo.'
+];
+const FRASES=['Cada estrela é um passinho rumo ao seu objetivo.','Você é capaz de muito mais do que imagina.','Hoje é um ótimo dia para aprender algo novo.','Pouco a pouco, você vai longe.','Persistência é o caminho do sucesso.','Seu esforço de hoje é a sua conquista de amanhã.','Não precisa ser perfeito, precisa ser feito.','Grandes notas começam com pequenos hábitos.'];
+
+function sample(){
+  const T=n=>iso(addDays(new Date(),n)), t=today();
+  const S=[['Matemática',0,'Prof. Carla'],['Português',1,'Prof. Rafael'],['Ciências',2,'Prof. Júlia'],['História',3,'Prof. Marcos'],['Geografia',6,'Prof. Ana'],['Inglês',4,'Teacher Bia']].map(([name,c,teacher])=>({id:uid(),name,color:COLORS[c],teacher}));
+  const id=n=>S.find(s=>s.name===n).id;
+  const ledger=[];
+  const L=(d,amount,reason,status)=>ledger.push({id:uid(),date:d,amount,reason,status});
+  for(let i=6;i>=1;i--){L(T(-i),10,'Meta do dia concluída','ok');L(T(-i),5,'Ciclo de foco','ok');if(i%2)L(T(-i),10,'Dia completo','ok')}
+  L(T(-3),15,'Tarefa entregue: Ciências','ok');L(T(-1),10,'Meta do dia concluída','pending');
+  const focus=[];for(let i=1;i<=5;i++)focus.push({date:T(-i),subj:S[i%4].id,min:25});
+  return {sample:true,name:'Ana',subjects:S,
+    goals:[{id:uid(),date:t,subj:id('Matemática'),text:'Exercícios da página 42',min:30,done:true},
+      {id:uid(),date:t,subj:id('Português'),text:'Ler o capítulo 3 do livro',min:20,done:false},
+      {id:uid(),date:t,subj:id('Inglês'),text:'Revisar vocabulário',min:15,done:false}],
+    events:[{id:uid(),type:'prova',subj:id('Matemática'),title:'Frações e decimais',date:T(4),done:false},
+      {id:uid(),type:'trabalho',subj:id('Ciências'),title:'Maquete do sistema solar',date:T(9),done:false},
+      {id:uid(),type:'tarefa',subj:id('Português'),title:'Redação: minhas férias',date:T(1),done:false},
+      {id:uid(),type:'prova',subj:id('História'),title:'Brasil Colônia',date:T(15),done:false}],
+    reminders:[{id:uid(),time:'14:00',text:'Hora de estudar!'},{id:uid(),time:'19:30',text:'Arrumar a mochila'},{id:uid(),time:'21:00',text:'Celular longe e boa noite'}],
+    remDone:{},focus,ledger,bonusDays:{},
+    rewards:[{id:uid(),name:'1 hora de videogame',cost:50,icon:'🎮'},{id:uid(),name:'Escolher o filme da sexta',cost:80,icon:'🎬'},{id:uid(),name:'Pizza no fim de semana',cost:150,icon:'🍕'},{id:uid(),name:'Passeio no parque',cost:200,icon:'🛝'}],
+    requests:[],parent:{pin:null,auto:false,rules:{goal:10,focus:5,task:15,day:10}},log:[]};
+}
+let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+if(!S||!S.subjects)S=sample();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let tab='hoje',calRef=new Date(),selDay=today(),newColor=COLORS[0],tipOff=0,pView='aprovar',pUnlocked=false,pinBuf='',pinStep='enter',pinFirst='';
+try{tab=localStorage.getItem(KEY+'-tab')||'hoje'}catch(e){}
+const main=document.getElementById('main');
+const starI=(c='star')=>`<svg class="${c}" aria-hidden="true"><use href="#st"/></svg>`;
+const ic=(n,c='ic')=>`<svg class="${c}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const subj=id=>S.subjects.find(s=>s.id===id)||{name:'Sem matéria',color:'#9AA3BD'};
+const dot=c=>`<span class="sdot" style="background:${c}" aria-hidden="true"></span>`;
+const subjOpts=sel=>S.subjects.map(s=>`<option value="${s.id}" ${s.id===sel?'selected':''}>${esc(s.name)}</option>`).join('');
+const toast=(m,withStar)=>{const t=document.createElement('div');t.className='toast';t.innerHTML=(withStar?starI():'')+esc(m);document.body.appendChild(t);setTimeout(()=>t.remove(),1900)};
+function burst(x,y){for(let i=0;i<9;i++){const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('class','burst');s.innerHTML='<use href="#st"/>';const a=Math.random()*6.28,r=60+Math.random()*60;s.style.left=(x-11)+'px';s.style.top=(y-11)+'px';s.style.setProperty('--dx',Math.cos(a)*r+'px');s.style.setProperty('--dy',Math.sin(a)*r+'px');document.body.appendChild(s);setTimeout(()=>s.remove(),950)}}
+
+/* estrelas */
+const balance=()=>S.ledger.filter(l=>l.status==='ok').reduce((a,l)=>a+l.amount,0);
+const pendingSum=()=>S.ledger.filter(l=>l.status==='pending').reduce((a,l)=>a+l.amount,0);
+const earned=()=>S.ledger.filter(l=>l.status==='ok'&&l.amount>0).reduce((a,l)=>a+l.amount,0);
+function earn(amount,reason){if(!amount)return;S.ledger.push({id:uid(),date:today(),amount,reason,status:S.parent.auto?'ok':'pending'});}
+function level(){const e=earned();let i=0;LEVELS.forEach((l,k)=>{if(e>=l[0])i=k});const cur=LEVELS[i],nx=LEVELS[i+1];return {name:cur[1],next:nx,frac:nx?(e-cur[0])/(nx[0]-cur[0]):1,toNext:nx?nx[0]-e:0}}
+function streak(){const days=new Set(S.goals.filter(g=>g.done).map(g=>g.date).concat(S.focus.map(f=>f.date)));let n=0,d=new Date();if(!days.has(iso(d)))d=addDays(d,-1);while(days.has(iso(d))){n++;d=addDays(d,-1)}return n}
+function checkDayBonus(){const t=today();const g=S.goals.filter(x=>x.date===t);if(g.length>=2&&g.every(x=>x.done)&&!S.bonusDays[t]){S.bonusDays[t]=1;earn(S.parent.rules.day,'Dia completo: todas as metas');return true}return false}
+function countdown(date,done){if(done)return['ok','Feito'];const n=diffDays(date);if(n<0)return['no','Atrasado'];if(n===0)return['hot','Hoje!'];if(n===1)return['hot','Amanhã'];if(n<=5)return['soon',`em ${n} dias`];return['later',`em ${n} dias`]}
+const fmtD=s=>{const d=parse(s);return d.getDate()+' de '+MES[d.getMonth()].slice(0,3)};
+const hm=m=>m>=60?Math.floor(m/60)+'h'+(m%60?pad(m%60):''):m+' min';
+
+function scoreCard(){
+  const lv=level(),p=pendingSum();
+  return `<section class="card score" aria-label="Minhas estrelas">
+    <div class="score-top"><div><div class="lbl">Minhas estrelas</div><div class="big num">${starI()}${balance()}</div></div>
+    <div class="level"><b>${lv.name}</b><span>${lv.next?`faltam ${lv.toNext} para ${lv.next[1]}`:'nível máximo!'}</span></div></div>
+    <div class="xp" aria-hidden="true"><i style="width:${Math.round(lv.frac*100)}%"></i></div>
+    <div class="score-row"><span class="pill-d">${starI()}${p} esperando os pais</span><span class="pill-d">${ic('fire')} ${streak()} dia${streak()===1?'':'s'} seguidos</span></div>
+  </section>`;
+}
+
+function renderHoje(){
+  const t=today(),d=new Date();
+  const goals=S.goals.filter(g=>g.date===t);const done=goals.filter(g=>g.done).length;
+  const next=S.events.filter(e=>!e.done&&e.date>=t).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,2);
+  const di=(d.getDate()+tipOff)%TIPS.length, fr=FRASES[(d.getDate()+tipOff)%FRASES.length];
+  const nowHM=pad(d.getHours())+':'+pad(d.getMinutes());
+  const rem=S.reminders.slice().sort((a,b)=>a.time.localeCompare(b.time));
+  return `${S.sample?'<div class="sample">Estes são exemplos para você ver como funciona. <button data-act="clear">Começar do zero</button></div>':''}
+  ${scoreCard()}
+  <section class="card"><h2>${ic('target')}Metas de hoje<small>${done}/${goals.length}</small></h2>
+    ${goals.length?`<ul class="list">${goals.map(g=>{const s=subj(g.subj);return `<li class="item ${g.done?'done':''}" data-id="${g.id}"><button class="chk" data-act="goal" aria-label="${g.done?'Desmarcar':'Concluir'} meta">${ic('check')}</button><div class="mid"><b>${esc(g.text)}</b><span>${dot(s.color)} ${esc(s.name)} · ${g.min} min</span></div>${g.done?'':`<span class="reward-tag">+${S.parent.rules.goal}${starI()}</span>`}<button class="x" data-act="delgoal" aria-label="Apagar meta">×</button></li>`}).join('')}</ul>`:'<p class="empty">Nenhuma meta para hoje. Que tal criar uma?</p>'}
+    <p class="lbl-s" style="margin:10px 0 0">Complete 2 ou mais metas no dia e ganhe +${S.parent.rules.day} de bônus!</p>
+    <form class="add" data-form="goal"><input class="inp" id="gText" name="text" placeholder="O que vou estudar? (ex.: exercícios)" autocomplete="off" required>
+      <div class="row"><select class="inp" id="gSubj" name="subj" aria-label="Matéria">${subjOpts()}</select><select class="inp w" id="gMin" name="min" aria-label="Tempo">${[10,15,20,30,45,60].map(m=>`<option value="${m}" ${m===20?'selected':''}>${m} min</option>`).join('')}</select><button class="btn">Criar</button></div></form>
+  </section>
+  ${next.length?`<section class="card"><h2>${ic('cal')}Vem aí</h2><ul class="list">${next.map(e=>{const s=subj(e.subj),c=countdown(e.date,e.done);return `<li class="item">${dot(TYPES[e.type][1])}<div class="mid"><b>${TYPES[e.type][0]} de ${esc(s.name)}</b><span>${esc(e.title)} · ${fmtD(e.date)}</span></div><span class="pill ${c[0]}">${c[1]}</span></li>`}).join('')}</ul></section>`:''}
+  <section class="card"><h2>${ic('bell')}Lembretes do dia</h2>
+    ${rem.length?`<ul class="list">${rem.map(r=>{const k=t+r.id,dn=!!S.remDone[k];const late=!dn&&r.time<=nowHM;return `<li class="item ${dn?'done':''}" data-id="${r.id}"><button class="chk" data-act="rem" aria-label="${dn?'Desmarcar':'Marcar'} lembrete">${ic('check')}</button><span class="time">${r.time}</span><div class="mid"><b>${esc(r.text)}</b>${late?'<span style="color:var(--red)">agora é a hora!</span>':''}</div><button class="x" data-act="delrem" aria-label="Apagar lembrete">×</button></li>`}).join('')}</ul>`:'<p class="empty">Sem lembretes.</p>'}
+    <form class="add" data-form="rem"><div class="row"><input class="inp w" id="rTime" name="time" type="time" value="18:00" aria-label="Horário" required><input class="inp" id="rText" name="text" placeholder="Lembrete (ex.: revisar)" autocomplete="off" required><button class="btn">Adicionar</button></div>
+      <button type="button" class="linkbtn" data-act="notif" style="align-self:flex-start">Avisar no celular quando o app estiver aberto</button></form>
+  </section>
+  <section class="card postit"><h2 style="color:#8A5D00">${ic('bulb')}Dica de estudo</h2><p class="tip">${esc(TIPS[di])}</p>
+    <div class="tip-who"><span>✦ ${esc(fr)}</span><button class="linkbtn" data-act="tip">Outra dica</button></div></section>`;
+}
+
+function renderMaterias(){
+  const ws=iso(addDays(new Date(),-6));
+  const per={};S.focus.filter(f=>f.date>=ws).forEach(f=>per[f.subj]=(per[f.subj]||0)+f.min);
+  S.goals.filter(g=>g.done&&g.date>=ws).forEach(g=>per[g.subj]=(per[g.subj]||0)+g.min);
+  return `<section class="card"><h2>${ic('book')}Minhas matérias<small>${S.subjects.length}</small></h2>
+    <div class="subs">${S.subjects.map(s=>`<div class="sub" style="background:${s.color}" data-id="${s.id}"><b>${esc(s.name)}</b><span>${s.teacher?esc(s.teacher)+' · ':''}${hm(per[s.id]||0)} na semana</span><button class="x" data-act="delsub" aria-label="Apagar matéria ${esc(s.name)}">×</button></div>`).join('')||'<p class="empty">Crie sua primeira matéria abaixo.</p>'}</div>
+    <form class="add" data-form="subject"><div class="row"><input class="inp" id="sName" name="name" placeholder="Matéria (ex.: Arte)" autocomplete="off" required><input class="inp" id="sTeacher" name="teacher" placeholder="Professor(a)" autocomplete="off"></div>
+      <div class="row"><div class="colors">${COLORS.map(c=>`<button type="button" data-color="${c}" aria-pressed="${c===newColor}" aria-label="Escolher cor" style="background:${c}"></button>`).join('')}</div><button class="btn" style="margin-left:auto">Criar</button></div></form>
+  </section>
+  <section class="card"><h2>${ic('timer')}Estudo nos últimos 7 dias</h2>
+    ${Object.keys(per).length?`<div class="hbars">${Object.keys(per).sort((a,b)=>per[b]-per[a]).map(k=>{const s=subj(k),mx=Math.max(...Object.values(per));return `<div class="hbar"><span class="nm">${dot(s.color)}<span>${esc(s.name)}</span></span><span class="v">${hm(per[k])}</span><div class="tr"><i style="width:${per[k]/mx*100}%;background:${s.color}"></i></div></div>`}).join('')}</div>`:'<p class="empty">Complete metas e ciclos de foco para ver aqui.</p>'}
+  </section>`;
+}
+
+function renderAgenda(){
+  const y=calRef.getFullYear(),m=calRef.getMonth();const first=new Date(y,m,1);const start=addDays(first,-((first.getDay()+6)%7));
+  const cells=[];for(let i=0;i<42;i++){const d=addDays(start,i);if(i>=35&&d.getMonth()!==m)break;cells.push(d)}
+  const t=today();
+  const cal=cells.map(d=>{const k=iso(d);const ev=S.events.filter(e=>e.date===k);
+    return `<button class="cd ${d.getMonth()!==m?'out':''} ${k===t?'today':''}" data-day="${k}" aria-pressed="${k===selDay}" aria-label="${d.getDate()} de ${MES[d.getMonth()]}${ev.length?', '+ev.length+' compromisso':''}">${d.getDate()}<span class="dots">${ev.slice(0,3).map(e=>`<i style="background:${k===selDay?'#fff':TYPES[e.type][1]}"></i>`).join('')}</span></button>`}).join('');
+  const list=S.events.slice().sort((a,b)=>(a.done-b.done)||a.date.localeCompare(b.date)).filter(e=>!e.done||diffDays(e.date)>=-7);
+  return `<section class="card"><div class="cal-h"><button data-act="prevm" aria-label="Mês anterior">‹</button><b>${MES[m]} ${y}</b><button data-act="nextm" aria-label="Próximo mês">›</button></div>
+    <div class="cal">${['S','T','Q','Q','S','S','D'].map(w=>`<span class="wd">${w}</span>`).join('')}${cal}</div>
+    <div class="legend">${Object.values(TYPES).map(([n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join('')}</div></section>
+  <section class="card"><h2>${ic('cal')}Provas e tarefas</h2>
+    ${list.length?`<ul class="list">${list.map(e=>{const s=subj(e.subj),c=countdown(e.date,e.done);return `<li class="item ${e.done?'done':''}" data-id="${e.id}"><button class="chk" data-act="ev" aria-label="${e.done?'Desmarcar':'Marcar como feito'}">${ic('check')}</button><div class="mid"><b>${TYPES[e.type][0]}: ${esc(s.name)}</b><span>${esc(e.title)} · ${fmtD(e.date)}</span></div><span class="pill ${c[0]}">${c[1]}</span>${e.done?'':`<span class="reward-tag">+${S.parent.rules.task}${starI()}</span>`}<button class="x" data-act="delev" aria-label="Apagar">×</button></li>`}).join('')}</ul>`:'<p class="empty">Nada marcado. Adicione abaixo.</p>'}
+    <p class="lbl-s" style="margin:10px 0 0">Marque quando entregar a tarefa ou fizer a prova e ganhe +${S.parent.rules.task} estrelas.</p>
+    <form class="add" data-form="event"><div class="row"><select class="inp" id="eType" name="type" aria-label="Tipo">${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join('')}</select><select class="inp" id="eSubj" name="subj" aria-label="Matéria">${subjOpts()}</select></div>
+      <input class="inp" id="eTitle" name="title" placeholder="Conteúdo (ex.: capítulo 4)" autocomplete="off">
+      <div class="row"><input class="inp" id="eDate" name="date" type="date" value="${selDay}" aria-label="Data" required><button class="btn">Marcar</button></div></form>
+  </section>`;
+}
+
+const F={mode:'foco',len:{foco:25*60,curto:15*60,pausa:5*60},left:25*60,running:false,timer:null,subj:null};
+const fmt=s=>pad(Math.floor(s/60))+':'+pad(s%60);
+function ringSVG(){const r=98,c=2*Math.PI*r,frac=1-F.left/F.len[F.mode];return `<svg viewBox="0 0 220 220" aria-hidden="true"><circle cx="110" cy="110" r="${r}" fill="none" stroke="var(--blue-soft)" stroke-width="16"/><circle cx="110" cy="110" r="${r}" fill="none" stroke="${F.mode==='pausa'?'var(--green)':'var(--blue)'}" stroke-width="16" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-frac)}"/></svg>`}
+function renderFoco(){
+  if(!F.subj&&S.subjects[0])F.subj=S.subjects[0].id;
+  const td=S.focus.filter(f=>f.date===today());
+  return `<section class="card"><h2>${ic('timer')}Modo foco<small>${td.length} ciclo${td.length===1?'':'s'} hoje</small></h2>
+    <div class="timer">
+      <select class="inp" id="fSubj" aria-label="Matéria" style="width:100%;flex:none">${subjOpts(F.subj)}</select>
+      <div class="chips" style="justify-content:center"><button class="chip" data-fmode="foco" aria-pressed="${F.mode==='foco'}">Foco 25 min</button><button class="chip" data-fmode="curto" aria-pressed="${F.mode==='curto'}">Foco 15 min</button><button class="chip" data-fmode="pausa" aria-pressed="${F.mode==='pausa'}">Pausa 5 min</button></div>
+      <div class="ring" id="fring">${ringSVG()}<div class="clock"><b id="fclock">${fmt(F.left)}</b><span>${F.mode==='pausa'?'descansa um pouco':'concentra!'}</span></div></div>
+      <div class="row" style="justify-content:center"><button class="btn" data-act="fstart">${F.running?'Pausar':'Começar'}</button><button class="btn ghost" data-act="freset">Recomeçar</button></div>
+      <p class="lbl-s" style="text-align:center;margin:0">Cada ciclo de foco completo vale +${S.parent.rules.focus} estrelas. Deixe o celular de lado!</p>
+    </div></section>`;
+}
+function beep(){try{const a=new(window.AudioContext||window.webkitAudioContext)();[0,.25,.5].forEach(t=>{const o=a.createOscillator(),g=a.createGain();o.frequency.value=880;o.connect(g);g.connect(a.destination);g.gain.setValueAtTime(.15,a.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,a.currentTime+t+.2);o.start(a.currentTime+t);o.stop(a.currentTime+t+.22)})}catch(e){}}
+function tick(){F.left--;
+  if(F.left<=0){clearInterval(F.timer);F.running=false;beep();
+    if(F.mode!=='pausa'){const min=F.len[F.mode]/60;S.focus.push({date:today(),subj:F.subj,min});earn(S.parent.rules.focus,'Ciclo de foco: '+subj(F.subj).name);save();toast(`Ciclo completo! +${S.parent.rules.focus} estrelas`,true);F.mode='pausa'}else{toast('Pausa acabou. Bora!');F.mode='foco'}
+    F.left=F.len[F.mode];if(tab==='foco')render();return}
+  if(tab==='foco'){const c=document.getElementById('fclock');if(c)c.textContent=fmt(F.left);const r=document.getElementById('fring');if(r)r.querySelector('svg').outerHTML=ringSVG()}
+}
+
+function renderPremios(){
+  const b=balance();
+  const reqs=S.requests.slice().reverse().slice(0,6);
+  return `${scoreCard()}
+  <section class="card tape"><h2>${ic('gift')}Loja de prêmios</h2>
+    ${S.rewards.length?`<div class="rewards">${S.rewards.map(r=>{const can=b>=r.cost;const waiting=S.requests.some(q=>q.reward===r.id&&q.status==='pending');return `<div class="rw" data-id="${r.id}"><span class="emo" aria-hidden="true">${esc(r.icon)}</span><b>${esc(r.name)}</b><span class="cost">${starI()}${r.cost}</span><div class="prog" aria-hidden="true"><i style="width:${Math.min(100,b/r.cost*100)}%"></i></div><button class="btn yellow" data-act="ask" ${!can||waiting?'disabled':''}>${waiting?'Pedido feito':can?'Pedir':'Faltam '+(r.cost-b)}</button></div>`}).join('')}</div>`:'<p class="empty">Peça para seus pais cadastrarem prêmios na Área dos pais.</p>'}
+    <p class="lbl-s" style="margin:12px 0 0">Seus pais aprovam os pedidos e as estrelas que você ganhou.</p>
+  </section>
+  ${reqs.length?`<section class="card"><h2>Meus pedidos</h2><ul class="list">${reqs.map(q=>{const r=S.rewards.find(x=>x.id===q.reward)||{name:q.name,icon:'🎁'};const st={pending:['wait','Esperando'],ok:['ok','Aprovado!'],no:['no','Recusado']}[q.status];return `<li class="item"><span aria-hidden="true" style="font-size:22px">${esc(r.icon)}</span><div class="mid"><b>${esc(r.name)}</b><span>${fmtD(q.date)}</span></div><span class="pill ${st[0]}">${st[1]}</span></li>`}).join('')}</ul></section>`:''}
+  <button class="btn ghost" data-act="parent" style="display:flex;align-items:center;justify-content:center;gap:8px">${ic('lock')}Área dos pais</button>`;
+}
+
+/* ---------- área dos pais ---------- */
+const pSheet=document.getElementById('pSheet'),pBody=document.getElementById('pBody');
+function openParent(){pinBuf='';pinStep=S.parent.pin?'enter':'create';pinFirst='';pUnlocked=false;pSheet.hidden=false;renderParent()}
+function closeParent(){pSheet.hidden=true;pUnlocked=false;render()}
+function renderPin(){
+  const title={create:'Crie um PIN de 4 números',confirm:'Repita o PIN',enter:'Digite o PIN dos pais'}[pinStep];
+  return `<h3>${ic('lock')}Área dos pais<button class="x" data-p="close" aria-label="Fechar">×</button></h3>
+  <p style="margin:0;text-align:center;font-weight:800">${title}</p>
+  ${pinStep==='create'?'<p class="lbl-s" style="text-align:center;margin:0">Só os pais devem saber. Ele protege a aprovação de estrelas e prêmios.</p>':''}
+  <div class="pin-dots" aria-label="${pinBuf.length} de 4 números">${[0,1,2,3].map(i=>`<i class="${i<pinBuf.length?'on':''}"></i>`).join('')}</div>
+  <p class="err" id="pinErr" hidden></p>
+  <div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-pin="${n}">${n}</button>`).join('')}<button data-pin="back" aria-label="Apagar">‹</button><button data-pin="0">0</button><button data-p="close" aria-label="Fechar">×</button></div>
+  ${pinStep==='enter'?'<button class="linkbtn" data-p="forgot" style="align-self:center">Esqueci o PIN</button>':''}`;
+}
+function renderParent(){
+  if(!pUnlocked){pBody.innerHTML=renderPin();return}
+  const pend=S.ledger.filter(l=>l.status==='pending');const reqs=S.requests.filter(q=>q.status==='pending');
+  const tabs=[['aprovar',`Aprovar (${pend.length+reqs.length})`],['premios','Prêmios'],['relatorio','Relatório'],['regras','Regras']];
+  let body='';
+  if(pView==='aprovar'){
+    body=`<div class="card"><h2>Estrelas para aprovar<small>${pend.reduce((a,l)=>a+l.amount,0)} estrelas</small></h2>
+      ${pend.length?`<ul class="list">${pend.map(l=>`<li class="item" data-id="${l.id}"><div class="mid"><b>${esc(l.reason)}</b><span>${fmtD(l.date)}</span></div><span class="reward-tag">+${l.amount}${starI()}</span><button class="btn green" data-p="okstar" style="padding:6px 10px" aria-label="Aprovar">✓</button><button class="btn red" data-p="nostar" style="padding:6px 10px" aria-label="Recusar">×</button></li>`).join('')}</ul>
+      <div class="row" style="margin-top:10px"><button class="btn green" data-p="okall" style="flex:1">Aprovar todas</button></div>`:'<p class="empty">Nada para aprovar agora.</p>'}</div>
+      <div class="card"><h2>Pedidos de prêmio</h2>${reqs.length?`<ul class="list">${reqs.map(q=>{const r=S.rewards.find(x=>x.id===q.reward)||{name:'Prêmio',cost:0,icon:'🎁'};return `<li class="item" data-id="${q.id}"><span aria-hidden="true" style="font-size:22px">${esc(r.icon)}</span><div class="mid"><b>${esc(r.name)}</b><span>${r.cost} estrelas · saldo ${balance()}</span></div><button class="btn green" data-p="okreq" style="padding:6px 10px" ${balance()<r.cost?'disabled':''}>Aprovar</button><button class="btn red" data-p="noreq" style="padding:6px 10px">Recusar</button></li>`}).join('')}</ul>`:'<p class="empty">Nenhum pedido.</p>'}</div>
+      <div class="card"><h2>Bônus especial</h2><form class="row" data-pform="bonus"><input class="inp" id="bReason" name="reason" placeholder="Motivo (ex.: tirou 9 em Ciências)" required><input class="inp w" id="bAmt" name="amount" type="number" min="1" max="500" value="20" aria-label="Estrelas"><button class="btn yellow">Dar</button></form></div>`;
+  }
+  if(pView==='premios'){
+    body=`<div class="card"><h2>Prêmios cadastrados</h2>${S.rewards.length?`<ul class="list">${S.rewards.map(r=>`<li class="item" data-id="${r.id}"><span aria-hidden="true" style="font-size:22px">${esc(r.icon)}</span><div class="mid"><b>${esc(r.name)}</b><span>${r.cost} estrelas</span></div><button class="x" data-p="delrw" aria-label="Apagar prêmio">×</button></li>`).join('')}</ul>`:'<p class="empty">Nenhum prêmio ainda.</p>'}
+      <form class="add" data-pform="reward"><input class="inp" id="rwName" name="name" placeholder="Prêmio (ex.: sorvete no sábado)" required>
+      <div class="row"><select class="inp w" id="rwIcon" name="icon" aria-label="Ícone">${EMOS.map(e=>`<option>${e}</option>`).join('')}</select><input class="inp w" id="rwCost" name="cost" type="number" min="5" max="5000" value="60" aria-label="Custo em estrelas"><button class="btn">Adicionar</button></div></form>
+      <p class="lbl-s" style="margin:10px 0 0">Dica: prêmios pequenos (30 a 80 estrelas) motivam no dia a dia. Os grandes viram meta do mês.</p></div>`;
+  }
+  if(pView==='relatorio'){
+    const ws=iso(addDays(new Date(),-6));const days=Array.from({length:7},(_,i)=>iso(addDays(new Date(),i-6)));
+    const fmin=S.focus.filter(f=>f.date>=ws).reduce((a,f)=>a+f.min,0)+S.goals.filter(g=>g.done&&g.date>=ws).reduce((a,g)=>a+g.min,0);
+    const gd=S.goals.filter(g=>g.done&&g.date>=ws).length,gt=S.goals.filter(g=>g.date>=ws).length;
+    const st=S.ledger.filter(l=>l.date>=ws&&l.amount>0&&l.status!=='no').reduce((a,l)=>a+l.amount,0);
+    const perDay=days.map(d=>S.focus.filter(f=>f.date===d).reduce((a,f)=>a+f.min,0)+S.goals.filter(g=>g.done&&g.date===d).reduce((a,g)=>a+g.min,0));const mx=Math.max(...perDay,1);
+    body=`<div class="stat-row"><div class="stat"><b>${hm(fmin)}</b><span>de estudo</span></div><div class="stat"><b>${gd}/${gt}</b><span>metas feitas</span></div><div class="stat"><b>${st}</b><span>estrelas</span></div></div>
+    <div class="card"><h2>Minutos por dia</h2><svg viewBox="0 0 320 150" role="img" aria-label="Minutos de estudo nos últimos 7 dias: ${days.map((d,i)=>DOW3[parse(d).getDay()]+' '+perDay[i]+' minutos').join(', ')}" style="width:100%;height:auto">
+      <line x1="0" y1="120" x2="320" y2="120" stroke="var(--line)" stroke-width="1.5"/>
+      ${perDay.map((v,i)=>{const h=v/mx*96,x=12+i*44;return `<rect x="${x}" y="${120-h}" width="28" height="${h}" rx="4" fill="${i===6?'var(--blue)':'#A9C4F2'}"/>${v?`<text x="${x+14}" y="${114-h}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)">${v}</text>`:''}<text x="${x+14}" y="138" text-anchor="middle" font-size="11" font-weight="800" fill="var(--soft)">${DOW3[parse(days[i]).getDay()]}</text>`}).join('')}
+    </svg></div>
+    <div class="card"><h2>Histórico</h2><ul class="list">${S.ledger.slice().reverse().slice(0,12).map(l=>{const s={ok:['ok','Aprovado'],pending:['wait','Pendente'],no:['no','Recusado']}[l.status];return `<li class="item"><div class="mid"><b>${esc(l.reason)}</b><span>${fmtD(l.date)}</span></div><span class="reward-tag" style="color:${l.amount<0?'var(--red)':''}">${l.amount>0?'+':''}${l.amount}</span><span class="pill ${s[0]}">${s[1]}</span></li>`}).join('')}</ul>
+    ${S.log.length?`<p class="lbl-s" style="margin:10px 0 0">${S.log.slice(-3).map(esc).join(' · ')}</p>`:''}</div>`;
+  }
+  if(pView==='regras'){
+    const R=S.parent.rules;
+    body=`<div class="card"><h2>Quantas estrelas vale cada coisa</h2><form data-pform="rules" style="display:flex;flex-direction:column;gap:10px">
+      ${[['goal','Meta do dia concluída'],['focus','Ciclo de foco completo'],['task','Prova ou tarefa feita'],['day','Bônus por completar todas as metas']].map(([k,n])=>`<label class="rule" for="ru-${k}">${n}<input class="inp" id="ru-${k}" name="${k}" type="number" min="0" max="200" value="${R[k]}"></label>`).join('')}
+      <label class="switch" for="auto"><input type="checkbox" id="auto" name="auto" ${S.parent.auto?'checked':''}>Aprovar estrelas automaticamente</label>
+      <p class="lbl-s" style="margin:0">Desligado: as estrelas ficam esperando você conferir. Ligado: entram direto no saldo.</p>
+      <div class="row"><input class="inp" id="kidName" name="name" value="${esc(S.name)}" placeholder="Nome do(a) estudante" aria-label="Nome do(a) estudante"><button class="btn">Salvar</button></div></form></div>
+      <div class="card"><h2>PIN</h2><button class="btn ghost" data-p="newpin">Trocar o PIN</button></div>`;
+  }
+  pBody.innerHTML=`<h3>${ic('lock')}Área dos pais<button class="x" data-p="close" aria-label="Fechar">×</button></h3>
+    <div class="ptabs">${tabs.map(([k,n])=>`<button class="chip" data-pview="${k}" aria-pressed="${pView===k}">${n}</button>`).join('')}</div>${body}
+    <button class="btn ghost" data-p="close">Sair da área dos pais</button>`;
+}
+function pinPress(k){
+  const err=document.getElementById('pinErr');
+  if(k==='back'){pinBuf=pinBuf.slice(0,-1);renderParent();return}
+  if(pinBuf.length>=4)return; pinBuf+=k;
+  if(pinBuf.length<4){renderParent();return}
+  if(pinStep==='create'){pinFirst=pinBuf;pinBuf='';pinStep='confirm';renderParent();return}
+  if(pinStep==='confirm'){if(pinBuf===pinFirst){S.parent.pin=pinFirst;save();pUnlocked=true;pView='aprovar';toast('PIN criado');renderParent()}else{pinBuf='';pinStep='create';renderParent();const e=document.getElementById('pinErr');e.textContent='Os PINs não batem. Tente de novo.';e.hidden=false}return}
+  if(pinStep==='enter'){if(pinBuf===S.parent.pin){pUnlocked=true;renderParent()}else{pinBuf='';renderParent();const e=document.getElementById('pinErr');e.textContent='PIN errado.';e.hidden=false}}
+}
+pSheet.addEventListener('click',e=>{
+  if(e.target===pSheet){closeParent();return}
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.pin){pinPress(b.dataset.pin);return}
+  if(b.dataset.pview){pView=b.dataset.pview;renderParent();return}
+  const a=b.dataset.p, host=b.closest('[data-id]'), id=host&&host.dataset.id;
+  if(a==='close'){closeParent();return}
+  if(a==='forgot'){pBody.innerHTML=`<h3>Redefinir PIN<button class="x" data-p="close" aria-label="Fechar">×</button></h3><p style="margin:0">Para criar um PIN novo, confirme abaixo. As estrelas e prêmios continuam como estão, e a troca fica registrada no histórico.</p><button class="btn red" data-p="resetpin">Criar PIN novo</button>`;return}
+  if(a==='resetpin'||a==='newpin'){S.log.push('PIN redefinido em '+fmtD(today()));S.parent.pin=null;save();pinBuf='';pinStep='create';pUnlocked=false;renderParent();return}
+  if(a==='okstar'||a==='nostar'){const l=S.ledger.find(x=>x.id===id);l.status=a==='okstar'?'ok':'no';save();renderParent();return}
+  if(a==='okall'){S.ledger.forEach(l=>{if(l.status==='pending')l.status='ok'});save();toast('Estrelas aprovadas',true);renderParent();return}
+  if(a==='okreq'||a==='noreq'){const q=S.requests.find(x=>x.id===id);const r=S.rewards.find(x=>x.id===q.reward);
+    if(a==='okreq'){if(balance()<r.cost){toast('Saldo insuficiente');return}q.status='ok';S.ledger.push({id:uid(),date:today(),amount:-r.cost,reason:'Prêmio: '+r.name,status:'ok'});toast('Prêmio aprovado!')}else q.status='no';
+    save();renderParent();return}
+  if(a==='delrw'){S.rewards=S.rewards.filter(r=>r.id!==id);save();renderParent();return}
+});
+pSheet.addEventListener('submit',e=>{
+  e.preventDefault();const f=e.target,fd=new FormData(f),g=k=>(fd.get(k)||'').toString().trim();
+  if(f.dataset.pform==='bonus'){const n=parseInt(g('amount'));if(!g('reason')||!(n>0))return;S.ledger.push({id:uid(),date:today(),amount:n,reason:'Bônus: '+g('reason'),status:'ok'});save();toast(`+${n} estrelas de bônus`,true);renderParent();return}
+  if(f.dataset.pform==='reward'){const n=parseInt(g('cost'));if(!g('name')||!(n>0))return;S.rewards.push({id:uid(),name:g('name'),cost:n,icon:g('icon')||'🎁'});save();renderParent();toast('Prêmio adicionado');return}
+  if(f.dataset.pform==='rules'){['goal','focus','task','day'].forEach(k=>{const n=parseInt(g(k));if(n>=0)S.parent.rules[k]=n});S.parent.auto=!!fd.get('auto');if(g('name'))S.name=g('name');save();toast('Regras salvas');renderParent();return}
+});
+
+/* ---------- render ---------- */
+function render(){
+  const d=new Date();const h=d.getHours();
+  document.getElementById('hello').textContent=(h<12?'Bom dia':h<18?'Boa tarde':'Boa noite')+(S.name?', '+S.name:'')+'!';
+  document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
+  main.innerHTML=`<div style="display:flex;flex-direction:column;gap:16px">${({hoje:renderHoje,materias:renderMaterias,agenda:renderAgenda,foco:renderFoco,premios:renderPremios})[tab]()}</div>`;
+}
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('.tab');if(!b)return;tab=b.dataset.tab;try{localStorage.setItem(KEY+'-tab',tab)}catch(er){}render();scrollTo(0,0)});
+document.getElementById('parentBtn').addEventListener('click',openParent);
+
+main.addEventListener('click',e=>{
+  const el=e.target.closest('button');if(!el)return;const host=el.closest('[data-id]');const id=host&&host.dataset.id;const act=el.dataset.act;
+  if(act==='clear'){S=Object.assign(sample(),{sample:false,name:'',subjects:[],goals:[],events:[],reminders:[],focus:[],ledger:[],requests:[],log:[]});S.rewards=sample().rewards;save();tab='materias';render();toast('Tudo limpinho! Comece criando suas matérias');return}
+  if(act==='goal'){const g=S.goals.find(x=>x.id===id);g.done=!g.done;
+    if(g.done){earn(S.parent.rules.goal,'Meta: '+g.text);const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2);const bonus=checkDayBonus();save();render();toast(bonus?`Todas as metas! +${S.parent.rules.goal+S.parent.rules.day} estrelas`:`Meta feita! +${S.parent.rules.goal} estrelas`,true)}
+    else{const l=S.ledger.slice().reverse().find(x=>x.reason==='Meta: '+g.text&&x.status==='pending');if(l)S.ledger=S.ledger.filter(x=>x!==l);save();render()}return}
+  if(act==='delgoal'){S.goals=S.goals.filter(x=>x.id!==id);save();render();return}
+  if(act==='rem'){const k=today()+id;if(S.remDone[k])delete S.remDone[k];else S.remDone[k]=1;save();render();return}
+  if(act==='delrem'){S.reminders=S.reminders.filter(x=>x.id!==id);save();render();return}
+  if(act==='notif'){try{if(!('Notification' in window)){toast('Este navegador não mostra avisos');return}Notification.requestPermission().then(p=>toast(p==='granted'?'Avisos ligados':'Avisos não permitidos')).catch(()=>toast('Avisos não permitidos'))}catch(er){toast('Avisos não permitidos')}return}
+  if(act==='tip'){tipOff++;render();return}
+  if(act==='delsub'){S.subjects=S.subjects.filter(s=>s.id!==id);save();render();return}
+  if(act==='prevm'){calRef=new Date(calRef.getFullYear(),calRef.getMonth()-1,1);render();return}
+  if(act==='nextm'){calRef=new Date(calRef.getFullYear(),calRef.getMonth()+1,1);render();return}
+  if(act==='ev'){const ev=S.events.find(x=>x.id===id);ev.done=!ev.done;if(ev.done){earn(S.parent.rules.task,TYPES[ev.type][0]+': '+subj(ev.subj).name);const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2);toast(`Muito bem! +${S.parent.rules.task} estrelas`,true)}save();render();return}
+  if(act==='delev'){S.events=S.events.filter(x=>x.id!==id);save();render();return}
+  if(act==='fstart'){if(!F.subj){toast('Crie uma matéria primeiro');return}if(F.running){clearInterval(F.timer);F.running=false}else{F.running=true;F.timer=setInterval(tick,1000)}render();return}
+  if(act==='freset'){clearInterval(F.timer);F.running=false;F.left=F.len[F.mode];render();return}
+  if(el.dataset.fmode){clearInterval(F.timer);F.running=false;F.mode=el.dataset.fmode;F.left=F.len[F.mode];render();return}
+  if(el.dataset.day){selDay=el.dataset.day;render();return}
+  if(el.dataset.color){newColor=el.dataset.color;el.parentNode.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b===el));return}
+  if(act==='ask'){const r=S.rewards.find(x=>x.id===id);if(balance()<r.cost)return;S.requests.push({id:uid(),reward:r.id,date:today(),status:'pending'});save();render();toast('Pedido enviado para os pais!');return}
+  if(act==='parent'){openParent();return}
+});
+main.addEventListener('change',e=>{if(e.target.id==='fSubj')F.subj=e.target.value});
+main.addEventListener('submit',e=>{
+  e.preventDefault();const f=e.target,fd=new FormData(f),g=k=>(fd.get(k)||'').toString().trim();
+  if(f.dataset.form==='goal'){if(!g('text'))return;if(!S.subjects.length){toast('Crie uma matéria primeiro');return}S.goals.push({id:uid(),date:today(),subj:g('subj'),text:g('text'),min:parseInt(g('min'))||20,done:false});save();render();document.getElementById('gText').focus();return}
+  if(f.dataset.form==='rem'){if(!g('text')||!g('time'))return;S.reminders.push({id:uid(),time:g('time'),text:g('text')});save();render();toast('Lembrete criado');return}
+  if(f.dataset.form==='subject'){if(!g('name'))return;S.subjects.push({id:uid(),name:g('name'),teacher:g('teacher'),color:newColor});save();render();toast('Matéria criada');return}
+  if(f.dataset.form==='event'){if(!g('date')||!S.subjects.length){toast('Escolha matéria e data');return}S.events.push({id:uid(),type:g('type'),subj:g('subj'),title:g('title')||'Conteúdo a definir',date:g('date'),done:false});save();render();toast('Marcado na agenda');return}
+});
+
+/* lembretes: aviso quando o app está aberto */
+let lastMin='';
+setInterval(()=>{const d=new Date(),hmn=pad(d.getHours())+':'+pad(d.getMinutes());if(hmn===lastMin)return;lastMin=hmn;
+  S.reminders.filter(r=>r.time===hmn&&!S.remDone[today()+r.id]).forEach(r=>{toast('⏰ '+r.text);try{if('Notification' in window&&Notification.permission==='granted')new Notification('Nota 10',{body:r.text})}catch(e){}});
+  if(tab==='hoje')render();},20000);
+
+render();
+})();
+</script>
+
+<div class="ios-bg" id="iosSheet" hidden>
+  <div class="ios" role="dialog" aria-labelledby="iosTitle">
+    <img src="icon-192.png" alt="">
+    <h3 id="iosTitle">Instalar no iPhone</h3>
+    <ol>
+      <li>Abra este site no <b>Safari</b>.</li>
+      <li>Toque no botão <b>Compartilhar</b> (o quadrado com a seta para cima).</li>
+      <li>Escolha <b>Adicionar à Tela de Início</b> e toque em <b>Adicionar</b>.</li>
+    </ol>
+    <button class="btn" id="iosClose">Entendi</button>
+  </div>
+</div>
+<script>
+(function(){
+  if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+  const btn=document.getElementById('installBtn'), sheet=document.getElementById('iosSheet');
+  const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  let deferred=null;
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferred=e;if(!standalone)btn.hidden=false});
+  if(ios&&!standalone)btn.hidden=false;
+  btn.addEventListener('click',async()=>{
+    if(deferred){deferred.prompt();const r=await deferred.userChoice;deferred=null;if(r.outcome==='accepted')btn.hidden=true}
+    else if(ios){sheet.hidden=false}
+  });
+  document.getElementById('iosClose').addEventListener('click',()=>sheet.hidden=true);
+  sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.hidden=true});
+  window.addEventListener('appinstalled',()=>{btn.hidden=true});
+})();
+</script>
+</body>
+</html>
