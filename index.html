@@ -219,6 +219,45 @@ select.inp{flex:1 1 130px}
 .ios-bg .ios{background:var(--card);border-radius:22px;padding:20px;max-width:456px;width:100%;border:2px solid var(--line);display:flex;flex-direction:column;gap:12px;margin-bottom:env(safe-area-inset-bottom,0px)}
 .ios h3{margin:0;font-size:20px}.ios ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 .ios img{width:56px;height:56px;border-radius:14px}
+.bk-btn{margin-left:auto;width:40px;height:40px;border-radius:50%;border:2px solid var(--line);background:var(--card);display:grid;place-items:center;color:var(--soft);flex:none}.bk-btn+.lock-btn{margin-left:8px!important}.install-btn:not([hidden])+.bk-btn{margin-left:8px}
+.bk-bg{position:fixed;inset:0;background:rgba(20,20,30,.45);display:flex;align-items:flex-end;justify-content:center;z-index:60;padding:12px}
+.bk-bg[hidden]{display:none!important}
+.bk-sheet{background:var(--card,#fff);color:var(--ink,#222);border:1.5px solid var(--line,#ddd);border-radius:22px;padding:20px;max-width:456px;width:100%;display:flex;flex-direction:column;gap:12px;margin-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 20px 50px rgba(0,0,0,.2)}
+.bk-sheet h3{margin:0;font-size:20px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bk-sheet p{margin:0;font-size:14px;line-height:1.5;opacity:.85}
+.bk-sheet .bk-x{border:0;background:none;font-size:26px;line-height:1;color:inherit;opacity:.6;padding:0 4px;cursor:pointer}
+.bk-sheet .bk-row{display:flex;flex-direction:column;gap:8px}
+.bk-sheet .bk-b{border:0;border-radius:14px;padding:13px 16px;font:inherit;font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.bk-sheet .bk-main{background:var(--bk-acc);color:#fff}
+.bk-sheet .bk-alt{background:transparent;color:inherit;border:1.5px solid var(--line,#ddd)}
+.bk-sheet .bk-msg{font-size:13px;font-weight:700;border-radius:10px;padding:8px 10px;display:none}
+.bk-sheet .bk-msg.on{display:block}
+.bk-sheet .bk-msg.ok{background:rgba(40,150,90,.12);color:#1F7A4A}
+.bk-sheet .bk-msg.err{background:rgba(210,60,60,.12);color:#B0303A}
+.bk-sheet small{font-size:12px;opacity:.7;line-height:1.45}
+
+/* boas-vindas */
+.ob{position:fixed;inset:0;z-index:55;overflow:auto;display:flex;align-items:center;justify-content:center;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px));
+  background:var(--paper);background-image:linear-gradient(90deg,transparent 0 34px,var(--margin) 34px 36px,transparent 36px),repeating-linear-gradient(0deg,transparent 0 31px,var(--line) 31px 33px)}
+.ob[hidden]{display:none!important}
+body.ob-open{overflow:hidden}
+.ob-card{background:var(--card);border:2px solid var(--line);border-radius:26px;max-width:400px;width:100%;padding:26px 22px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;box-shadow:0 18px 40px rgba(30,43,79,.12)}
+.ob-card h2{font-family:var(--f-disp);font-weight:800;font-size:26px;line-height:1.15;margin:0;color:var(--ink);outline:none}
+.ob-card h2 b{color:var(--blue)}
+.ob-card p{margin:0;color:var(--soft);font-weight:600;line-height:1.5}
+.ob-card .ob-hint{font-size:13px}
+.ob-logo{width:92px;height:92px}
+.ob-go{width:100%;padding:14px 16px;font-size:16px}
+.ob-form{display:flex;flex-direction:column;gap:12px;width:100%}
+.ob-form .inp{font-size:18px;text-align:center;padding:14px}
+.ob-steps{display:flex;gap:6px}
+.ob-steps i{width:28px;height:6px;border-radius:9px;background:var(--line)}
+.ob-steps i.on{background:var(--blue)}
+.ob-tag{display:inline-flex;align-items:center;gap:6px;background:var(--yellow-soft);color:var(--yellow-deep);font-weight:900;font-size:12px;padding:6px 12px;border-radius:999px;text-transform:uppercase;letter-spacing:.06em}
+.ob-tag .ic{width:14px;height:14px}
+.ob-row{display:flex;justify-content:space-between;width:100%;gap:12px}
+.ob-row .linkbtn:only-child{margin:0 auto}
+.ob-star .star,.ob-star svg{width:72px;height:72px}
 </style>
 
 </head>
@@ -246,11 +285,13 @@ select.inp{flex:1 1 130px}
   </defs>
 </svg>
 
+<div class="ob" id="ob" hidden role="dialog" aria-modal="true" aria-labelledby="obT"><div class="ob-card" id="obCard"></div></div>
 <div class="app">
   <header class="top">
     <svg aria-hidden="true"><use href="#logo"/></svg>
     <div><div class="brand">Nota <b>10</b></div><div class="hello" id="hello"></div></div>
     <button class="install-btn" id="installBtn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Instalar</button>
+    <button class="bk-btn" id="bkBtn" aria-label="Backup dos dados" title="Backup dos dados"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4 4 0 0 1-.5 9.5"/><path d="M12 12v8M9 15l3-3 3 3"/></svg></button>
     <button class="lock-btn" id="parentBtn" aria-label="Área dos pais"><svg class="ic"><use href="#i-lock"/></svg>Pais</button>
   </header>
   <main id="main"></main>
@@ -328,7 +369,7 @@ function sample(){
     rewards:[{id:uid(),name:'1 hora de videogame',cost:50,icon:'🎮'},{id:uid(),name:'Escolher o filme da sexta',cost:80,icon:'🎬'},{id:uid(),name:'Pizza no fim de semana',cost:150,icon:'🍕'},{id:uid(),name:'Passeio no parque',cost:200,icon:'🛝'}],
     requests:[],parent:{pin:null,auto:false,rules:{goal:10,focus:5,task:15,day:10}},log:[]};
 }
-let S;try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+let S,FIRST=false;try{FIRST=localStorage.getItem(KEY)===null;S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
 if(!S||!S.subjects)S=sample();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 let tab='hoje',calRef=new Date(),selDay=today(),newColor=COLORS[0],tipOff=0,pView='aprovar',pUnlocked=false,pinBuf='',pinStep='enter',pinFirst='';
@@ -560,7 +601,7 @@ document.getElementById('parentBtn').addEventListener('click',openParent);
 
 main.addEventListener('click',e=>{
   const el=e.target.closest('button');if(!el)return;const host=el.closest('[data-id]');const id=host&&host.dataset.id;const act=el.dataset.act;
-  if(act==='clear'){S=Object.assign(sample(),{sample:false,name:'',subjects:[],goals:[],events:[],reminders:[],focus:[],ledger:[],requests:[],log:[]});S.rewards=sample().rewards;save();tab='materias';render();toast('Tudo limpinho! Comece criando suas matérias');return}
+  if(act==='clear'){S=limpo();save();tab='materias';render();toast('Tudo limpinho! Comece criando suas matérias');return}
   if(act==='goal'){const g=S.goals.find(x=>x.id===id);g.done=!g.done;
     if(g.done){earn(S.parent.rules.goal,'Meta: '+g.text);const r=el.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height/2);const bonus=checkDayBonus();save();render();toast(bonus?`Todas as metas! +${S.parent.rules.goal+S.parent.rules.day} estrelas`:`Meta feita! +${S.parent.rules.goal} estrelas`,true)}
     else{const l=S.ledger.slice().reverse().find(x=>x.reason==='Meta: '+g.text&&x.status==='pending');if(l)S.ledger=S.ledger.filter(x=>x!==l);save();render()}return}
@@ -597,6 +638,73 @@ setInterval(()=>{const d=new Date(),hmn=pad(d.getHours())+':'+pad(d.getMinutes()
   S.reminders.filter(r=>r.time===hmn&&!S.remDone[today()+r.id]).forEach(r=>{toast('⏰ '+r.text);try{if('Notification' in window&&Notification.permission==='granted')new Notification('Nota 10',{body:r.text})}catch(e){}});
   if(tab==='hoje')render();},20000);
 
+
+/* ---------- boas-vindas (primeira abertura) ---------- */
+function limpo(){const keep=S.onboarded?{name:S.name,parent:S.parent,onboarded:true}:{name:''};
+  const n=Object.assign(sample(),{sample:false,subjects:[],goals:[],events:[],reminders:[],focus:[],ledger:[],requests:[],log:[]},keep);n.rewards=sample().rewards;return n}
+const OB={step:0,name:'',pin:'',first:'',err:''};
+const obEl=document.getElementById('ob'), obCard=document.getElementById('obCard');
+function obDots(){return `<div class="pin-dots" aria-label="${OB.pin.length} de 4 números">${[0,1,2,3].map(i=>`<i class="${i<OB.pin.length?'on':''}"></i>`).join('')}</div>`}
+function obPad(){return `<div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-ob-pin="${n}">${n}</button>`).join('')}<span></span><button data-ob-pin="0">0</button><button data-ob-pin="back" aria-label="Apagar">‹</button></div>`}
+const obSteps=()=>`<div class="ob-steps" aria-hidden="true">${[0,1,2,3].map(i=>`<i class="${i<=Math.min(OB.step,3)?'on':''}"></i>`).join('')}</div>`;
+function obRender(){
+  let h='';
+  if(OB.step===0){h=`<svg class="ob-logo" aria-hidden="true"><use href="#logo"/></svg>
+    <h2 id="obT">Bem-vindo(a) ao <span style="white-space:nowrap">Nota <b>10</b>!</span></h2>
+    <p>Aqui cada estudo vira estrela, e as estrelas viram prêmios combinados com a sua família.</p>
+    <p class="ob-hint">Leva 1 minutinho. Se puder, faça junto com um adulto.</p>
+    <button class="btn ob-go" data-ob="next">Vamos começar</button>
+    <button class="linkbtn" data-ob="restore">Já usa o Nota 10 em outro aparelho? Restaurar uma cópia</button>`}
+  else if(OB.step===1){h=`${obSteps()}<h2 id="obT">Como você se chama?</h2>
+    <p>É assim que o app vai falar com você.</p>
+    <form data-ob-form="name" class="ob-form"><input class="inp" id="obName" maxlength="24" autocomplete="given-name" placeholder="Seu primeiro nome" value="${esc(OB.name)}" aria-label="Nome do(a) estudante">
+    ${OB.err?`<p class="err">${OB.err}</p>`:''}<button class="btn ob-go">Continuar</button></form>`}
+  else if(OB.step===2||OB.step===3){const c=OB.step===3;h=`${obSteps()}<span class="ob-tag">${ic('lock')}Para os pais</span>
+    <h2 id="obT">${c?'Repita o PIN':'Crie o PIN dos pais'}</h2>
+    <p>${c?'Digite os mesmos 4 números para confirmar.':`Chame o pai, a mãe ou o responsável. Com esse PIN, só vocês aprovam as estrelas e os prêmios ${esc(OB.name)?'de '+esc(OB.name):''}.`}</p>
+    ${obDots()}${OB.err?`<p class="err">${OB.err}</p>`:''}${obPad()}
+    <div class="ob-row">${c?'<button class="linkbtn" data-ob="redo">Começar o PIN de novo</button>':'<button class="linkbtn" data-ob="back">Voltar</button><button class="linkbtn" data-ob="skip">Os pais criam depois</button>'}</div>`}
+  else {h=`<div class="ob-star" aria-hidden="true">${starI()}</div><h2 id="obT">Tudo pronto, ${esc(OB.name)}!</h2>
+    <p>${OB.first?'O PIN dos pais foi criado. ':'Os pais podem criar o PIN depois, no botão <b>Pais</b>. '}Agora é só montar suas matérias e metas.</p>
+    <button class="btn ob-go" data-ob="zero">Começar meu planner</button>
+    <button class="btn ghost ob-go" data-ob="demo">Ver primeiro com exemplos</button>
+    <p class="ob-hint">Com exemplos, você vê o app funcionando e depois toca em <b>Começar do zero</b>.</p>`}
+  obCard.innerHTML=h;
+  const t=obCard.querySelector('#obName')||obCard.querySelector('h2');if(t)t.focus({preventScroll:true});
+}
+function obPin(k){
+  if(k==='back'){OB.pin=OB.pin.slice(0,-1);obRender();return}
+  if(OB.pin.length>=4)return; OB.pin+=k; OB.err='';
+  if(OB.pin.length<4){obRender();return}
+  if(OB.step===2){OB.first=OB.pin;OB.pin='';OB.step=3;setTimeout(obRender,180);obRender();return}
+  if(OB.pin===OB.first){OB.pin='';OB.step=4;obRender();return}
+  OB.pin='';OB.first='';OB.step=2;OB.err='Os PINs ficaram diferentes. Vamos de novo.';obRender();
+}
+function obFim(demo){
+  if(demo){S.name=OB.name;S.parent.pin=OB.first||null;S.onboarded=true;S.sample=true;tab='hoje';}
+  else{S.onboarded=true;S.name=OB.name;S.parent.pin=OB.first||null;S=limpo();tab='materias';}
+  save();obEl.hidden=true;document.body.classList.remove('ob-open');render();
+  toast(demo?'Explore à vontade!':'Comece criando suas matérias');
+}
+if(obEl){
+  obEl.addEventListener('click',e=>{
+    const p=e.target.closest('[data-ob-pin]');if(p){obPin(p.dataset.obPin);return}
+    const b=e.target.closest('[data-ob]');if(!b)return;const a=b.dataset.ob;
+    if(a==='next'){OB.step=1;obRender()}
+    else if(a==='restore'){const k=document.getElementById('bkBtn');if(k)k.click()}
+    else if(a==='back'){OB.step=1;OB.pin='';OB.err='';obRender()}
+    else if(a==='skip'){OB.first='';OB.pin='';OB.err='';OB.step=4;obRender()}
+    else if(a==='redo'){OB.first='';OB.pin='';OB.err='';OB.step=2;obRender()}
+    else if(a==='zero')obFim(false);
+    else if(a==='demo')obFim(true);
+  });
+  obEl.addEventListener('submit',e=>{e.preventDefault();const v=(document.getElementById('obName').value||'').trim().replace(/\s+/g,' ');
+    if(!v){OB.err='Escreva seu nome para continuar.';obRender();return}OB.name=v;OB.err='';OB.step=2;obRender()});
+  document.addEventListener('keydown',e=>{if(obEl.hidden||(OB.step!==2&&OB.step!==3))return;if(/^[0-9]$/.test(e.key))obPin(e.key);else if(e.key==='Backspace')obPin('back')});
+  obEl.addEventListener('input',e=>{if(e.target.id==='obName'&&OB.err){OB.err='';const x=obCard.querySelector('.err');if(x)x.remove()}});
+  if(FIRST){obEl.hidden=false;document.body.classList.add('ob-open');obRender()}
+}
+
 render();
 })();
 </script>
@@ -629,6 +737,64 @@ render();
   document.getElementById('iosClose').addEventListener('click',()=>sheet.hidden=true);
   sheet.addEventListener('click',e=>{if(e.target===sheet)sheet.hidden=true});
   window.addEventListener('appinstalled',()=>{btn.hidden=true});
+})();
+</script>
+
+<div class="bk-bg" id="bkSheet" hidden>
+  <div class="bk-sheet" role="dialog" aria-labelledby="bkTitle" style="--bk-acc:#3D7BE0">
+    <h3 id="bkTitle">Backup dos seus dados<button class="bk-x" id="bkClose" aria-label="Fechar">×</button></h3>
+    <p>Seus dados ficam guardados só neste aparelho. Salve uma cópia de vez em quando para não perder nada e para levar seu progresso para outro celular ou computador.</p>
+    <div class="bk-row">
+      <button class="bk-b bk-main" id="bkSave">Salvar cópia</button>
+      <button class="bk-b bk-alt" id="bkLoad">Restaurar uma cópia</button>
+      <input type="file" id="bkFile" accept=".json,application/json" hidden>
+    </div>
+    <div class="bk-msg" id="bkMsg" role="status"></div>
+    <small>Para trocar de aparelho: salve a cópia aqui, mande o arquivo para o seu WhatsApp, e-mail ou Drive, abra o Nota 10 no aparelho novo e toque em <b>Restaurar uma cópia</b>.</small>
+  </div>
+</div>
+<script>
+(function(){
+  const KEY='nota10-v1', APP='Nota 10', SLUG='nota-10';
+  const bg=document.getElementById('bkSheet'), msg=document.getElementById('bkMsg'), file=document.getElementById('bkFile');
+  function say(t,ok){msg.textContent=t;msg.className='bk-msg on '+(ok?'ok':'err')}
+  function open(){msg.className='bk-msg';bg.hidden=false}
+  function close(){bg.hidden=true}
+  document.getElementById('bkBtn').addEventListener('click',open);
+  document.getElementById('bkClose').addEventListener('click',close);
+  bg.addEventListener('click',e=>{if(e.target===bg)close()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!bg.hidden)close()});
+  function dados(){const d={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k===KEY||k.startsWith(KEY+'-'))d[k]=localStorage.getItem(k)}}catch(e){}return d}
+  document.getElementById('bkSave').addEventListener('click',async()=>{
+    const d=dados();
+    if(!d[KEY]){say('Ainda não há dados salvos para copiar. Use o app um pouquinho e tente de novo.',false);return}
+    const hoje=new Date(), dt=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+    const nomeArq='backup-'+SLUG+'-'+dt+'.json';
+    const txt=JSON.stringify({app:KEY,nome:APP,versao:1,criado:hoje.toISOString(),dados:d});
+    const blob=new Blob([txt],{type:'application/json'});
+    try{
+      const f=new File([blob],nomeArq,{type:'application/json'});
+      if(navigator.canShare&&navigator.canShare({files:[f]})&&/android|iphone|ipad|ipod/i.test(navigator.userAgent)){
+        await navigator.share({files:[f],title:'Backup '+APP});say('Cópia pronta! Guarde o arquivo em um lugar seguro.',true);return}
+    }catch(e){if(e&&e.name==='AbortError')return}
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nomeArq;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);
+    say('Cópia salva: '+nomeArq+' (veja na pasta de downloads).',true);
+  });
+  document.getElementById('bkLoad').addEventListener('click',()=>{file.value='';file.click()});
+  file.addEventListener('change',()=>{
+    const f=file.files&&file.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=()=>{
+      let o;try{o=JSON.parse(r.result)}catch(e){say('Esse arquivo não é uma cópia válida.',false);return}
+      if(!o||o.app!==KEY||!o.dados||!o.dados[KEY]){say(o&&o.nome?'Essa cópia é do app '+o.nome+'. Abra ela no app certo.':'Esse arquivo não é uma cópia do '+APP+'.',false);return}
+      if(!confirm('Restaurar a cópia de '+new Date(o.criado).toLocaleDateString('pt-BR')+'? Os dados que estão agora neste aparelho serão substituídos.'))return;
+      try{Object.keys(dados()).forEach(k=>localStorage.removeItem(k));Object.entries(o.dados).forEach(([k,v])=>localStorage.setItem(k,v))}
+      catch(e){say('Não foi possível restaurar neste navegador.',false);return}
+      say('Tudo restaurado! Abrindo de novo…',true);setTimeout(()=>location.reload(),900);
+    };
+    r.readAsText(f);
+  });
 })();
 </script>
 </body>
